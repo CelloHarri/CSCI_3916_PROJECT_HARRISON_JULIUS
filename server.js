@@ -10,7 +10,11 @@ const User = require('./Users');
 const PantryItem = require('./PantryItem.js');
 
 mongoose.connect(process.env.DB)
-    .then(() => console.log('Connected to MongoDB'))
+    .then(async () => {
+        console.log('Connected to MongoDB');
+        await PantryItem.syncIndexes();
+        console.log('Indexes synced');
+    })
     .catch(err => { console.error('MongoDB connection error:', err); process.exit(1); });
 
 const app = express();
@@ -23,7 +27,7 @@ app.use(passport.initialize());
 const publicRouter = express.Router();
 const privateRouter = express.Router();
 
-publicRouter.post('/signup', async (req, res) => {
+publicRouter.post('/pantry/signup', async (req, res) => {
     if (!req.body.username || !req.body.password)
         return res.status(422).json({ success: false, message: 'Please Include Both Username and Password'});
     
@@ -50,7 +54,7 @@ publicRouter.post('/signup', async (req, res) => {
     }
 });
 
-publicRouter.post('/signin', async (req, res) => {
+publicRouter.post('/pantry/signin', async (req, res) => {
     try {
         const user = await User.findOne({ username: req.body.username}).select('username password');
 
@@ -85,22 +89,22 @@ privateRouter.route('/pantry')
     }
     })
     .post(authJwtController.isAuthenticated, async (req, res) => {
-        if (!req.body.name || !req.body.quantity || !req.body.category)
-                return res.status(400).json({success: false, message: 'Pantry Item Must include a name, a quantity type, and a category'});
+        if (!req.body.name || !req.body.category)
+                return res.status(400).json({success: false, message: 'Pantry Item Must include a name, and a category'});
         try {
             const pantryItem = new PantryItem({
                 name: req.body.name,
                 amount: req.body.amount ?? 1,      
                 amountAlert: req.body.amountAlert ?? null,
                 criticalAlert: req.body.criticalAlert ?? false,           
-                quantity: req.body.quantity || 'count',           
+                quantity: req.body.quantity || null,           
                 expirationDate: req.body.expirationDate || null,  
                 category: req.body.category || 'Uncategorized',   
                 imageUrl: req.body.imageUrl || '',                
                 userId: req.user._id,
             });
             await pantryItem.save();
-            res.status(200).json({success: true, message: "Pantry Item Created"});
+            res.status(200).json({success: true, message: "Pantry Item Created", PantryItem: pantryItem});
         } catch (err) {
             res.status(500).json({ success: false, message: err.message });
         }
