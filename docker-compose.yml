@@ -8,22 +8,23 @@ services:
       - SECRET_KEY=${SECRET_KEY}
     networks:
       - web
-    restart: always
+    restart: unless-stopped
 
-  # frontend:
-  #   build: ../CSCI_3916_REACTAPPPROJ_HARRISON_JULIUS
-  #   networks:
-  #     - web
-  #   restart: unless-stopped
+  frontend:
+    build: ../CSCI_3916_REACTAPPPROJ_HARRISON_JULIUS
+    networks:
+      - web
+    restart: unless-stopped
 
   cloudflared:
     image: cloudflare/cloudflared:latest
     command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
     networks:
       - web
-    restart: always
+    restart: unless-stopped
     depends_on:
       - backend
+      - frontend
 
 networks:
   web:
