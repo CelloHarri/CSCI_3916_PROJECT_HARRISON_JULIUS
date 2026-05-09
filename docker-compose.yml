@@ -10,11 +10,11 @@ services:
       - web
     restart: unless-stopped
 
-  frontend:
-    build: ../CSCI_3916_REACTAPPPROJ_HARRISON_JULIUS
-    networks:
-      - web
-    restart: unless-stopped
+  # frontend:
+  #   build: ../CSCI_3916_REACTAPPPROJ_HARRISON_JULIUS
+  #   networks:
+  #     - web
+  #   restart: unless-stopped
 
   cloudflared:
     image: cloudflare/cloudflared:latest
@@ -24,7 +24,6 @@ services:
     restart: unless-stopped
     depends_on:
       - backend
-      - frontend
 
 networks:
   web:

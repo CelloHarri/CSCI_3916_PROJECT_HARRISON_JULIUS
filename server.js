@@ -31,8 +31,9 @@ publicRouter.post('/pantry/signup', async (req, res) => {
     if (!req.body.username || !req.body.password)
         return res.status(422).json({ success: false, message: 'Please Include Both Username and Password' });
 
-    else if (!req.body.passwordConfirm)
+    else if (req.body.passwordConfirm != req.body.password)
         return res.status(422).json({ success: false, message: 'Passwords Do Not Match' });
+
 
     try {
         const user = new User({
